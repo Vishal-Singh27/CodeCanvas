@@ -1,29 +1,17 @@
 import re
+import os
 import numpy as np
-from sklearn.ensemble import RandomForestClassifier
+import joblib
 
 class PredictiveCodeSmellModel:
     def __init__(self):
-        self.model = RandomForestClassifier(n_estimators=50, random_state=42)
-        self._initialize_baseline_model()
-
-    def _initialize_baseline_model(self):
-        """
-        Phase 1: Trains the baseline model on synthetic/historical labeled data.
-        Features: [LOC, max_indentation, todo_count, complexity_score, console_logs]
-        Labels: 1 (High Bug Probability), 0 (Clean)
-        """
-        # Dummy training data representing feature vectors of code chunks
-        X_train = np.array([
-            [10, 1, 0, 2, 0],   # Clean, simple function
-            [250, 5, 3, 15, 8], # High risk, deeply nested, many logs
-            [15, 2, 0, 3, 1],   # Clean
-            [500, 8, 5, 40, 12],# Very high risk, spaghetti code
-            [45, 2, 1, 5, 2],   # Clean
-        ])
-        y_train = np.array([0, 1, 0, 1, 0])
-        
-        self.model.fit(X_train, y_train)
+        # Load the pre-trained Random Forest model
+        model_path = os.path.join(os.path.dirname(__file__), 'rf_code_smell_model.pkl')
+        try:
+            self.model = joblib.load(model_path)
+        except Exception as e:
+            print("Warning: Could not load model. Ensure Train_Model.ipynb was executed.")
+            self.model = None
 
     def extract_features(self, code_snippet):
         """Extracts structural features from the raw code string for ML processing."""
@@ -38,16 +26,19 @@ class PredictiveCodeSmellModel:
                 max_indent = indent
                 
         todo_count = len(re.findall(r'TODO|FIXME', code_snippet, re.IGNORECASE))
-        complexity_score = len(re.findall(r'if |for |while |switch |catch ', code_snippet))
+        cyclomatic_complexity = len(re.findall(r'if |for |while |switch |catch ', code_snippet))
         console_logs = len(re.findall(r'console\.log|print', code_snippet))
         
-        return np.array([[loc, max_indent, todo_count, complexity_score, console_logs]])
+        return np.array([[loc, max_indent, todo_count, cyclomatic_complexity, console_logs]])
 
     def predict_risk(self, code_snippet):
         """
         Predicts the bug probability score. 
         If probability > 0.6, it is routed to Groq LLM for deep analysis.
         """
+        if not self.model:
+            return {"error": "Model not loaded."}
+            
         features = self.extract_features(code_snippet)
         probability = self.model.predict_proba(features)[0][1] # Probability of class 1
         
