@@ -1,0 +1,24 @@
+node:events:505
+    throw er; // Unhandled 'error' event
+    ^
+
+Error: listen EADDRINUSE: address already in use :::5002
+    at Server.setupListenHandle [as _listen2] (node:net:2328:16)
+    at listenInCluster (node:net:2437:12)
+    at Server.listen (node:net:2562:7)
+    at app.listen (/Users/vishalsingh/Library/Mobile Documents/com~apple~CloudDocs/Coding Related/Ongoing-Projects/CodeCanvas/backend/node_modules/express/lib/application.js:635:24)
+    at file:///Users/vishalsingh/Library/Mobile%20Documents/com%7Eapple%7ECloudDocs/Coding%20Related/Ongoing-Projects/CodeCanvas/backend/server.js:54:5
+    at ModuleJob.run (node:internal/modules/esm/module_job:569:25)
+    at async node:internal/modules/esm/loader:650:26
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+Emitted 'error' event on Server instance at:
+    at emitErrorNT (node:net:2416:8)
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21) {
+  code: 'EADDRINUSE',
+  errno: -48,
+  syscall: 'listen',
+  address: '::',
+  port: 5002
+}
+
+Node.js v26.8.1
