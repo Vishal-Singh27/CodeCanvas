@@ -171,12 +171,15 @@ const Dashboard = () => {
   }, [selectedRepo, activeBranch, selectedCommit, fileModal, activeTab, setSearchParams]);
 
   useEffect(() => {
+    const favicon = document.querySelector('link[rel="icon"]');
     if (isLightMode) {
       document.documentElement.classList.add("light-mode");
       localStorage.setItem("codecanvas_theme", "light");
+      if (favicon) favicon.href = "/logo-light.jpg";
     } else {
       document.documentElement.classList.remove("light-mode");
       localStorage.setItem("codecanvas_theme", "dark");
+      if (favicon) favicon.href = "/logo.jpg";
     }
   }, [isLightMode]);
 

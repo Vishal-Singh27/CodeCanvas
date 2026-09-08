@@ -1,8 +1,16 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { GitBranch, Eye, MessageSquare, ArrowRight, Sparkles, Code2, Users, Bot } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const HomePage = () => {
+  const [isLightMode, setIsLightMode] = useState(localStorage.getItem('codecanvas_theme') === 'light');
+
+  useEffect(() => {
+    const handleThemeChange = () => setIsLightMode(localStorage.getItem('codecanvas_theme') === 'light');
+    window.addEventListener('storage', handleThemeChange);
+    return () => window.removeEventListener('storage', handleThemeChange);
+  }, []);
+
   return (
     <div className="min-h-screen bg-[#050505] text-gray-200 font-sans selection:bg-blue-500/30 overflow-hidden relative flex flex-col">
       
@@ -14,7 +22,7 @@ const HomePage = () => {
       {/* Navigation Bar - Full Width, Frosted Glass */}
       <nav className="flex items-center justify-between px-6 md:px-12 py-5 border-b border-white/5 bg-[#050505]/40 backdrop-blur-2xl sticky top-0 z-50">
         <div className="flex items-center space-x-3">
-          <img src="/logo.jpg" className="logo-img w-9 h-9 rounded-xl shadow-[0_0_20px_rgba(168,85,247,0.3)] border border-white/10" />
+          <img src={isLightMode ? "/logo-light.jpg" : "/logo.jpg"} className="logo-img w-9 h-9 rounded-xl shadow-[0_0_20px_rgba(168,85,247,0.3)] border border-white/10" />
           <span className="font-extrabold text-2xl tracking-tight text-white bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400">CodeCanvas</span>
         </div>
         
