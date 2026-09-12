@@ -34,7 +34,7 @@ import {
   Menu,
   Sun,
   Moon,
-  Maximize2, ArrowDown,
+  Maximize2, ArrowDown, Lock
 } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import ReactDiffViewer from "react-diff-viewer-continued";
@@ -81,6 +81,8 @@ const Dashboard = () => {
 
   const [user, setUser] = useState(null);
   const [repos, setRepos] = useState([]);
+  const [repoFilter, setRepoFilter] = useState("all");
+
   const [selectedRepo, setSelectedRepo] = useState(null);
   const [commits, setCommits] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -874,12 +876,15 @@ const Dashboard = () => {
             <span className="font-bold text-lg text-white">CodeCanvas</span>
           </div>
 
-          <div className="flex-1 overflow-y-auto p-3">
-            <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3 px-2">
-              Your Repositories
+          <div className="flex-1 overflow-y-auto p-3 flex flex-col">
+            <div className="flex items-center space-x-4 mb-4 px-2 border-b border-white/10 pb-2">
+              <button onClick={() => setRepoFilter('all')} className={`text-sm font-medium pb-[7px] border-b-2 transition-colors -mb-[9px] ${repoFilter === 'all' ? 'border-[#f9826c] text-white' : 'border-transparent text-gray-500 hover:text-gray-300'}`}>All</button>
+              <button onClick={() => setRepoFilter('public')} className={`text-sm font-medium pb-[7px] border-b-2 transition-colors -mb-[9px] ${repoFilter === 'public' ? 'border-[#f9826c] text-white' : 'border-transparent text-gray-500 hover:text-gray-300'}`}>Public</button>
+              <button onClick={() => setRepoFilter('private')} className={`text-sm font-medium pb-[7px] border-b-2 transition-colors -mb-[9px] ${repoFilter === 'private' ? 'border-[#f9826c] text-white' : 'border-transparent text-gray-500 hover:text-gray-300'}`}>Private</button>
             </div>
-            <div className="space-y-1">
+            <div className="space-y-1 flex-1 overflow-y-auto">
               {repos
+                .filter(repo => repoFilter === 'all' ? true : repoFilter === 'public' ? !repo.private : repo.private)
                 .filter(
                   (repo) =>
                     selectedRepo ||
@@ -899,7 +904,8 @@ const Dashboard = () => {
                     }`}
                   >
                     <Box size={16} className="mr-3 flex-shrink-0" />
-                    <span className="truncate" title={repo.name}>{repo.name}</span>
+                    <span className="truncate flex-1 text-left" title={repo.name}>{repo.name}</span>
+                    {repo.private && <Lock size={12} className="ml-2 opacity-40 flex-shrink-0" title="Private Repository" />}
                   </button>
                 ))}
             </div>
@@ -1257,7 +1263,10 @@ const Dashboard = () => {
                               <div className="p-2.5 bg-blue-500/10 text-blue-400 rounded-xl group-hover:scale-110 transition-transform">
                                 <Folder size={18} />
                               </div>
-                              <span className="text-white font-bold truncate flex-1 pr-6" title={repo.name}>{repo.name}</span>
+                              <div className="flex-1 min-w-0 pr-6 flex items-center">
+                                <span className="text-white font-bold truncate" title={repo.name}>{repo.name}</span>
+                                {repo.private && <Lock size={12} className="ml-2 opacity-50 flex-shrink-0 text-gray-400" title="Private Repository" />}
+                              </div>
                             </div>
                             {aiRec ? (
                               <p className="text-xs text-blue-300 font-medium line-clamp-2 w-full flex items-start mt-1">

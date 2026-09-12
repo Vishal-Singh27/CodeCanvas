@@ -27,7 +27,8 @@ export const getUserRepos = async (req, res) => {
       fullName: repo.full_name,
       description: repo.description,
       url: repo.html_url,
-      defaultBranch: repo.default_branch
+      defaultBranch: repo.default_branch,
+      private: repo.private
     }));
 
     res.json(repos);
