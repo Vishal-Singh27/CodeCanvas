@@ -614,7 +614,7 @@ const Dashboard = () => {
   }, [commitDetails]);
 
   useEffect(() => {
-    if (repoFiles.length > 0 && isInitializing.current && initialParams.current.file && activeTab === "files") {
+    if (repoFiles && repoFiles.length > 0 && isInitializing.current && initialParams.current.file && activeTab === "files") {
       openFileModal({ stopPropagation: () => {} }, initialParams.current.file, { hash: activeBranch });
       isInitializing.current = false;
     }
