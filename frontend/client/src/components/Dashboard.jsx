@@ -103,6 +103,8 @@ const Dashboard = () => {
   const [commitFilesTree, setCommitFilesTree] = useState(null);
   const [expandedFile, setExpandedFile] = useState(null);
   const [fileModal, setFileModal] = useState(null);
+  const [securityScan, setSecurityScan] = useState(null);
+  const [scanningSecurity, setScanningSecurity] = useState(false);
 
   const [currentPath, setCurrentPath] = useState("");
   const [commitCurrentPath, setCommitCurrentPath] = useState("");
@@ -839,6 +841,24 @@ const Dashboard = () => {
           }),
         );
     }
+  };
+
+
+  const runSecurityScan = async () => {
+    if (!fileModal || fileModal.isDiff || fileModal.isImage) return;
+    setScanningSecurity(true);
+    try {
+      const res = await fetchWithAuth(`${import.meta.env.VITE_API_URL || 'http://localhost:5001'}/api/security/scan`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content: fileModal.content, filename: fileModal.name }),
+      });
+      const data = await res.json();
+      setSecurityScan(data);
+    } catch (err) {
+      console.error(err);
+    }
+    setScanningSecurity(false);
   };
 
   if (!user || loading) {
@@ -1816,6 +1836,15 @@ const Dashboard = () => {
                   )}
                 </div>
                 <div className="flex items-center space-x-2">
+                  {!fileModal.isDiff && !fileModal.isImage && (
+                    <button
+                      onClick={runSecurityScan}
+                      disabled={scanningSecurity}
+                      className="text-xs bg-red-900/50 hover:bg-red-800 text-red-300 font-bold py-1 px-3 rounded flex items-center border border-red-800 transition"
+                    >
+                      {scanningSecurity ? "Scanning..." : "Deep Security Scan"}
+                    </button>
+                  )}
                   {fileModal.isDiff && (
                     <button
                       onClick={() => {
@@ -1907,12 +1936,28 @@ const Dashboard = () => {
                   </div>
                 ) : (
                   // Normal plain file viewer
-                  <pre
+                  <div
                     onMouseUp={handleMouseUp}
-                    className="text-sm font-mono text-gray-300 leading-relaxed overflow-x-auto w-full h-full"
+                    className="text-sm font-mono text-gray-300 leading-relaxed overflow-x-auto w-full h-full pb-8"
                   >
-                    {fileModal.content}
-                  </pre>
+                    {fileModal.content.split('\n').map((line, i) => {
+                      const vuln = securityScan?.vulnerabilities?.find(v => v.line === i + 1);
+                      return (
+                        <div key={i} className={`group relative flex ${vuln ? 'bg-red-950/60 border-l-[3px] border-red-500 shadow-[inset_0_0_10px_rgba(239,68,68,0.2)]' : 'hover:bg-white/5 border-l-[3px] border-transparent'}`}>
+                          <span className="w-12 text-gray-600 select-none text-right pr-4 shrink-0 border-r border-white/5 py-0.5">{i + 1}</span>
+                          <span className="whitespace-pre pl-4 py-0.5 relative w-full">
+                            {line || ' '}
+                            {vuln && (
+                              <div className="absolute right-4 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity z-10 flex items-center bg-[#0d1117] text-red-200 text-[11px] px-3 py-1.5 rounded shadow-2xl border border-red-500/50 backdrop-blur-sm pointer-events-none">
+                                <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse mr-2 shadow-[0_0_8px_rgba(239,68,68,0.8)]" />
+                                <strong className="mr-1.5 text-white">{vuln.cwe}:</strong> {vuln.name}
+                              </div>
+                            )}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
                 )}
               </div>
             </div>

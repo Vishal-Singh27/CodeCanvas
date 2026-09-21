@@ -29,6 +29,7 @@ app.use('/api/github', githubRoutes);
 app.use('/api/chat', chatRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/ai', aiRoutes);
+app.use('/api/security', securityRoutes);
 
 // Health Check
 app.get('/api/health', (req, res) => {
