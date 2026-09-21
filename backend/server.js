@@ -9,7 +9,7 @@ import githubRoutes from './routes/githubRoutes.js';
 import chatRoutes from './routes/chatRoutes.js';
 import notificationRoutes from './routes/notificationRoutes.js';
 import aiRoutes from "./routes/aiRoutes.js";
-
+import securityRoutes from "./routes/securityRoutes.js";
 
 dotenv.config();
 
