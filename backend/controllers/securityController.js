@@ -19,18 +19,41 @@ export const scanFileForVulnerabilities = async (req, res) => {
   try {
     const lines = content.split('\n');
     let vulnerabilities = [];
+    let aiSecurityScore = null;
+    let aiPrediction = "Safe";
     
-    // Attempt real Hugging Face API if token exists
-    if (process.env.HF_API_TOKEN) {
+    // 1. REAL DEEP LEARNING INTEGRATION (Hugging Face Inference API)
+    if (process.env.HF_API_TOKEN && process.env.HF_MODEL_NAME) {
       try {
-        console.log('[Security] Hitting Hugging Face CodeBERT for Vulnerability Analysis...');
-        // We simulate sending it chunk by chunk, but use heuristic fallback below for reliability
+        console.log(`[Security] Querying Neural Network: ${process.env.HF_MODEL_NAME}`);
+        // Send a truncated version of the file (CodeBERT max tokens is 512)
+        const truncatedContent = content.substring(0, 1500); 
+        
+        const hfResponse = await axios.post(
+          `https://api-inference.huggingface.co/models/${process.env.HF_MODEL_NAME}`,
+          { inputs: truncatedContent },
+          { headers: { Authorization: `Bearer ${process.env.HF_API_TOKEN}` } }
+        );
+
+        if (hfResponse.data && hfResponse.data[0]) {
+          // The API returns an array of label/score objects
+          const predictions = hfResponse.data[0];
+          // Usually LABEL_1 is vulnerable, LABEL_0 is safe in CodeBERT
+          const vulnPrediction = predictions.find(p => p.label === 'LABEL_1' || p.label === 1 || p.label === '1');
+          
+          if (vulnPrediction && vulnPrediction.score > 0.5) {
+            aiPrediction = "Vulnerable";
+            aiSecurityScore = Math.round((1 - vulnPrediction.score) * 100); // Inverse score (lower is worse)
+          } else {
+            aiSecurityScore = 100;
+          }
+        }
       } catch (e) {
-        console.log('[Security] HF API failed, falling back to local semantic parser.');
+        console.warn('[Security] Hugging Face API timeout or error. Using static analysis only.', e.message);
       }
     }
 
-    // Local Semantic Simulation (Guaranteed to work for Demo)
+    // 2. STATIC ANALYZER (For visual line-number highlighting in UI)
     lines.forEach((line, index) => {
       for (const pattern of VULN_PATTERNS) {
         if (pattern.regex.test(line)) {
@@ -47,17 +70,18 @@ export const scanFileForVulnerabilities = async (req, res) => {
       }
     });
 
-    // Calculate a mock repository/file security score
-    const totalLines = lines.length;
-    const vulnLines = vulnerabilities.length;
-    const baseScore = 100;
-    const penalty = vulnLines * 5;
-    let securityScore = Math.max(0, baseScore - penalty);
+    // If HF API wasn't configured, fallback to calculating score based on static analysis
+    if (aiSecurityScore === null) {
+      const baseScore = 100;
+      const penalty = vulnerabilities.length * 5;
+      aiSecurityScore = Math.max(0, baseScore - penalty);
+    }
 
     res.json({
-      score: securityScore,
+      score: aiSecurityScore,
+      aiStatus: aiPrediction,
       vulnerabilities,
-      scannedLines: totalLines
+      scannedLines: lines.length
     });
   } catch (error) {
     console.error('[Security] Scan Error:', error);
