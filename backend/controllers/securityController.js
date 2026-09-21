@@ -8,7 +8,8 @@ const VULN_PATTERNS = [
   { regex: /SELECT\s+.*\s+FROM\s+.*\s+WHERE\s+.*=\s*(\$|\+|\%)/gi, cwe: 'CWE-89', name: 'SQL Injection', risk: 0.94, desc: 'Improper neutralization of special elements used in an SQL Command.' },
   { regex: /dangerouslySetInnerHTML/g, cwe: 'CWE-79', name: 'React XSS', risk: 0.85, desc: 'Use of dangerouslySetInnerHTML exposes app to XSS.' },
   { regex: /child_process\.exec\(/g, cwe: 'CWE-78', name: 'Command Injection', risk: 0.96, desc: 'Improper neutralization of special elements used in an OS Command.' },
-  { regex: /res\.send\(.*req\.query/g, cwe: 'CWE-79', name: 'Reflected XSS', risk: 0.89, desc: 'Reflecting unsanitized user input in response.' }
+  { regex: /res\.send\(.*req\.query/g, cwe: 'CWE-79', name: 'Reflected XSS', risk: 0.89, desc: 'Reflecting unsanitized user input in response.' },
+  { regex: /localStorage\.setItem/g, cwe: 'CWE-312', name: 'Cleartext Storage of Sensitive Info', risk: 0.70, desc: 'Storing tokens in localStorage exposes them to XSS attacks.' }
 ];
 
 export const scanFileForVulnerabilities = async (req, res) => {
