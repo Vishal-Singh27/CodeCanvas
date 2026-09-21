@@ -6,12 +6,14 @@ CodeCanvas is a powerful, AI-assisted collaborative platform for developers. Sea
 - **GitHub Integration:** Browse repositories, branches, commits, and files with an elegant UI.
 - **AI Codebase Assistant:** Select text in any file to get instant, context-aware architectural explanations and debugging help.
 - **Team Collaboration:** Real-time team chat perfectly synced to your active branch's context.
+- **Deep Learning Security Scanner:** Instantly scan raw files for structural vulnerabilities (XSS, SQLi). Powered by a fine-tuned **CodeBERT** Transformer architecture with visual line-highlighting.
 - **Smart Dashboard:** Light and Dark modes with fluid glassmorphism UI.
 
 ## Project Structure
 This repository is organized as a Monorepo:
 - `/frontend/client` - React + Vite + TailwindCSS application.
 - `/backend` - Node.js + Express API and WebSocket server.
+  - `/backend/ml/notebooks` - Contains the PyTorch Jupyter Notebook (`Train_Vulnerability_Detector.ipynb`) used to fine-tune the CodeBERT security model on the Google CodeXGLUE dataset.
 - `/LLM` - Python-based LLM gateway (Groq/OpenAI integration).
 
 ## Getting Started
